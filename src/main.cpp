@@ -10,9 +10,11 @@
 
 #include "shader.h"
 #include "grid.h"
+#include "VertexBufferObject.h"
+#include "VertexArrayObject.h"
 
-float SCR_HEIGHT = 600;
-float SCR_WIDTH = 600;
+float SCR_HEIGHT = 600.0f;
+float SCR_WIDTH = 600.0f;
 
 // float vertices[] = {
 //   -0.5f, -0.5f, 0.0f,   //1
@@ -23,7 +25,7 @@ float SCR_WIDTH = 600;
 //    0.5f, -0.5f, 0.0f    //4
 // };
 
-glm::mat4 proj = glm::ortho(0.0f, 600.0f, 600.0f, 0.0f);
+glm::mat4 proj = glm::ortho(0.0f, SCR_WIDTH, SCR_HEIGHT, 0.0f);
 
 std::vector<float> square(float a, float x, float y) {
   std::vector<float> positions = {
@@ -91,7 +93,7 @@ int main()
 
   GLFWwindow* window;
 
-  window = glfwCreateWindow(600, 600, "Fortnite", NULL, NULL);
+  window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "Fortnite", NULL, NULL);
   if(!window)
   {
     std::cout << "sadge" << std::endl;
@@ -114,18 +116,17 @@ int main()
 
   shader.makeProgram(vertex, fragment);
 
-  unsigned int VBO, VAO;
-  glGenVertexArrays(1, &VAO);
-  glGenBuffers(1, &VBO);
+  VertexArrayObject vao;
+  vao.create();
+  vao.bind();
 
-  glBindVertexArray(VAO);
+  VertexBufferObject vbo;
+  vbo.dynamic = true;
+  vbo.create(18*sizeof(float), nullptr);
+  vbo.bind();
 
-  glBindBuffer(GL_ARRAY_BUFFER, VBO);
-  // glBufferData(GL_ARRAY_BUFFER, 18 * sizeof(float), vertices, GL_STATIC_DRAW);
-  glBufferData(GL_ARRAY_BUFFER, 18*sizeof(float), nullptr, GL_DYNAMIC_DRAW);
-
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-  glEnableVertexAttribArray(0);
+  vao.addPointer();
+  vao.enable(0);
 
   glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
@@ -135,13 +136,12 @@ int main()
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
 
-    glBindVertexArray(VAO);
+    vao.bind();
     shader.use();
     shader.setMat4("projection", proj);
 
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    vbo.bind();
     glBufferSubData(GL_ARRAY_BUFFER, 0, 18*sizeof(float), &test[0]); 
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
 
     glDrawArrays(GL_TRIANGLES, 0, 6);
 
@@ -149,8 +149,8 @@ int main()
     glfwPollEvents();
   }
 
-  glDeleteVertexArrays(1, &VAO);
-  glDeleteBuffers(1, &VBO);
+  vao.destroy();
+  vbo.destroy();
 
   return 0;
 }

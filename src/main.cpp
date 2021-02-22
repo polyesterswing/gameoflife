@@ -126,7 +126,6 @@ int main()
   unsigned int fragment = shader.createShader(fs.c_str(), GL_FRAGMENT_SHADER);
 
   shader.makeProgram(vertex, fragment);
-  shader.setMat4("projection", proj);
 
   Shader lines;
 
@@ -134,7 +133,6 @@ int main()
   unsigned int fragment2 = lines.createShader(fs2.c_str(), GL_FRAGMENT_SHADER);
 
   lines.makeProgram(vertex2, fragment2);
-  lines.setMat4("projection", proj);
 
   vao.create();
   vao.bind();
@@ -156,6 +154,7 @@ int main()
 
     shader.use();
     vao.bind();
+    shader.setMat4("projection", proj);
 
     vbo.bind();
     vbo.dynamic_data(0, verticesToRender.size()*sizeof(decltype(verticesToRender)::value_type), &verticesToRender[0]);
@@ -163,6 +162,7 @@ int main()
     glDrawArrays(GL_TRIANGLES, 0, verticesToRender.size());
 
     lines.use();
+    lines.setMat4("projection", proj);
 
     vbo.dynamic_data(0, 6 * sizeof(Vertex), &vertices);
     glDrawArrays(GL_TRIANGLES, 0, 6);

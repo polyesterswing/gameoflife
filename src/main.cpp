@@ -1,8 +1,13 @@
+/* 1. Any live cell with two or three live neighbours survives.
+ * 2. Any dead cell with three live neighbours becomes a live cell.
+ * 3. All other live cells die in the next generation. Similarly all other dead cells stay dead.*/
+
 #include <iostream>
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <array>
 #include <vector>
+#include <Windows.h>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -12,39 +17,24 @@
 #include "grid.h"
 #include "VertexBufferObject.h"
 #include "VertexArrayObject.h"
+#include "utils.h"
 
 float SCR_HEIGHT = 600.0f;
 float SCR_WIDTH = 600.0f;
+const float unitlength = 20.0f;
 
-// float vertices[] = {
-//   -0.5f, -0.5f, 0.0f,   //1
-//   -0.5f,  0.5f, 0.0f,   //2
-//    0.5f,  0.5f, 0.0f,   //3
-//   -0.5f, -0.5f, 0.0f,   //1
-//    0.5f,  0.5f, 0.0f,   //3
-//    0.5f, -0.5f, 0.0f    //4
-// };
+Vertex vertices[] = {
+  {0.0f, 0.0f},
+  {0.0f, 600.0f},
+  {600.0f, 0.0f},
+  {0.0f, 600.0f},
+  {600.0f, 600.0f},
+  {600.0f, 0.0f}
+};
+
+std::vector<Vertex> verticesToRender;
 
 glm::mat4 proj = glm::ortho(0.0f, SCR_WIDTH, SCR_HEIGHT, 0.0f);
-
-std::vector<float> square(float a, float x, float y) {
-  std::vector<float> positions = {
-    x - (a/2), y + (a/2), 0.0f,   //1
-    x + (a/2), y + (a/2), 0.0f,   //2
-    x - (a/2), y - (a/2), 0.0f,   //3
-    x + (a/2), y + (a/2), 0.0f,   //2
-    x - (a/2), y - (a/2), 0.0f,   //3
-    x + (a/2), y - (a/2), 0.0f,
-  };
-
-  return positions;
-}
-
-std::vector<float> square_x_y(float a, int x, int y) {
-  std::vector<float> positions = square(a, 0.0f + (2 * x + 1)*(a/2), 0.0f + (2 * y + 1)*(a/2));
-
-  return positions;
-}
 
 void mouse_button_callback(GLFWwindow *window, int button, int action, int mods);
 
@@ -73,25 +63,44 @@ in vec4 vertexColor;
 
 void main()
 {
-   FragColor = vertexColor;
+  FragColor = vertexColor;
 }
 )";
 
-std::vector<float> test = square_x_y(20.0f, 0, 0);
-Grid grid(SCR_WIDTH, SCR_HEIGHT, 10.0f);
+std::string fs2 =
+  R"(
+#version 330 core
+out vec4 FragColor;
+
+in vec4 vertexColor;
+
+void main()
+{
+  if(int(gl_FragCoord.x - 0.5) % 20 == 0 || int(gl_FragCoord.y - 0.5) % 20 == 0 || gl_FragCoord.y == 600.5 || gl_FragCoord.x == 600.5)
+  {
+    FragColor = vec4(1.0, 1.0, 1.0, 0.4);
+  }
+  else
+  {
+    FragColor = vec4(0.0, 0.0, 0.0, 0.0);
+  }
+}
+)";
+
+Grid grid(SCR_WIDTH, SCR_HEIGHT, 20.0f);
+
+VertexArrayObject vao;
+VertexBufferObject vbo;
 
 int main()
 {
-
-  for(float i: test){
-
-    std::cout<< i << "\n";
-  }
 
   if(!glfwInit())
     return -1;
 
   GLFWwindow* window;
+
+  glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
 
   window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "Fortnite", NULL, NULL);
   if(!window)
@@ -107,6 +116,8 @@ int main()
   if (glewInit() != GLEW_OK)
     std::cout << "GLEW failed to initialize" << std::endl;
 
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+  glEnable( GL_BLEND );
   glfwSetMouseButtonCallback(window, mouse_button_callback);
 
   Shader shader;
@@ -115,14 +126,21 @@ int main()
   unsigned int fragment = shader.createShader(fs.c_str(), GL_FRAGMENT_SHADER);
 
   shader.makeProgram(vertex, fragment);
+  shader.setMat4("projection", proj);
 
-  VertexArrayObject vao;
+  Shader lines;
+
+  unsigned int vertex2 = lines.createShader(vs.c_str(), GL_VERTEX_SHADER);
+  unsigned int fragment2 = lines.createShader(fs2.c_str(), GL_FRAGMENT_SHADER);
+
+  lines.makeProgram(vertex2, fragment2);
+  lines.setMat4("projection", proj);
+
   vao.create();
   vao.bind();
 
-  VertexBufferObject vbo;
   vbo.dynamic = true;
-  vbo.create(18*sizeof(float), nullptr);
+  vbo.create(900*6*sizeof(Vertex), nullptr);
   vbo.bind();
 
   vao.addPointer();
@@ -136,13 +154,17 @@ int main()
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
 
-    vao.bind();
     shader.use();
-    shader.setMat4("projection", proj);
+    vao.bind();
 
     vbo.bind();
-    glBufferSubData(GL_ARRAY_BUFFER, 0, 18*sizeof(float), &test[0]); 
+    vbo.dynamic_data(0, verticesToRender.size()*sizeof(decltype(verticesToRender)::value_type), &verticesToRender[0]);
 
+    glDrawArrays(GL_TRIANGLES, 0, verticesToRender.size());
+
+    lines.use();
+
+    vbo.dynamic_data(0, 6 * sizeof(Vertex), &vertices);
     glDrawArrays(GL_TRIANGLES, 0, 6);
 
     glfwSwapBuffers(window);
@@ -157,15 +179,46 @@ int main()
 
 void mouse_button_callback(GLFWwindow *window, int button, int action, int mods) {
   if(button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
+  {
+    double xpos, ypos;
+
+    glfwGetCursorPos(window, &xpos, &ypos);
+
+    grid.scr2grid(xpos, ypos);
+
+    grid.cells[(int)xpos][(int)ypos] = !(grid.cells[(int)xpos][(int)ypos]);
+
+    verticesToRender.clear();
+
+    for(unsigned int i = 0; i < grid.num_units; i++)
     {
-      double xpos, ypos;
-
-      glfwGetCursorPos(window, &xpos, &ypos);
-      std::cout << xpos <<  " " << ypos << std::endl;
-
-      grid.scr2grid(xpos, ypos);
-      test = square_x_y(20.0f, xpos, ypos);
-
+      for(unsigned int j = 0; j < grid.num_units; j++)
+      {
+        if(grid.cells[i][j])
+        {
+          std::vector<Vertex> tmp = grid.cell_x_y(i, j);
+          verticesToRender.insert(verticesToRender.end(), tmp.begin(), tmp.end());
+        }
+      }
     }
-}
 
+  }
+  if(button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS)
+  {
+    grid.checkNeighbours();
+
+    verticesToRender.clear();
+
+    for(unsigned int i = 0; i < grid.num_units; i++)
+    {
+      for(unsigned int j = 0; j < grid.num_units; j++)
+      {
+        if(grid.cells[i][j])
+        {
+          std::vector<Vertex> tmp = grid.cell_x_y(i, j);
+          verticesToRender.insert(verticesToRender.end(), tmp.begin(), tmp.end());
+        }
+      }
+    }
+  }
+}

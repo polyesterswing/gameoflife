@@ -8,6 +8,7 @@ class VertexBufferObject
         bool dynamic;
 
         void create(GLsizeiptr size, const void* data );
+        void dynamic_data(GLintptr offset, GLsizeiptr size, const void* data);
         void bind();
         void unbind();
         void destroy();

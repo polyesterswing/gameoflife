@@ -1,3 +1,6 @@
+#ifndef UTILS_H
+#define UTILS_H
+
 struct Point
 {
     int x;
@@ -6,5 +9,7 @@ struct Point
 
 struct Vertex
 {
-    float position[3];
+    float position[2];
 };
+
+#endif

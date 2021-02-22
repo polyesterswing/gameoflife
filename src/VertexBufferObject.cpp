@@ -21,3 +21,8 @@ void VertexBufferObject::destroy()
 {
     glDeleteBuffers(1, &ID);
 }
+
+void VertexBufferObject::dynamic_data(GLintptr offset, GLsizeiptr size, const void* data)
+{
+    glBufferSubData(GL_ARRAY_BUFFER, offset, size, data);
+}

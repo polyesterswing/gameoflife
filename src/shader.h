@@ -1,6 +1,7 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
+#include <glm/gtc/type_ptr.hpp>
 #include <string>
 
 class Shader
@@ -10,5 +11,5 @@ class Shader
   unsigned int createShader(const char* source, GLenum type);
   unsigned int makeProgram(unsigned int vertexShader, unsigned int fragmentShader);
   void use();
-  void setMat4(const std::string &name, glm::mat4 value);
+  void setMat4(const std::string &name, glm::mat4& value);
 };

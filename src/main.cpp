@@ -17,6 +17,7 @@
 #include "grid.h"
 #include "VertexBufferObject.h"
 #include "VertexArrayObject.h"
+#include "window.h"
 #include "utils.h"
 
 float SCR_HEIGHT = 600.0f;
@@ -31,6 +32,8 @@ Vertex vertices[] = {
   {600.0f, 600.0f},
   {600.0f, 0.0f}
 };
+
+Window window;
 
 std::vector<Vertex> verticesToRender;
 
@@ -70,13 +73,15 @@ void main()
 std::string fs2 =
   R"(
 #version 330 core
+#define PI 3.141592
+
 out vec4 FragColor;
 
 in vec4 vertexColor;
 
 void main()
 {
-  if(int(gl_FragCoord.x - 0.5) % 20 == 0 || int(gl_FragCoord.y - 0.5) % 20 == 0 || gl_FragCoord.y == 600.5 || gl_FragCoord.x == 600.5)
+  if(cos((PI/10.0)*gl_FragCoord.x) > 0.9 || cos((PI/10.0)*gl_FragCoord.y) > 0.9)
   {
     FragColor = vec4(1.0, 1.0, 1.0, 0.4);
   }
@@ -95,30 +100,18 @@ VertexBufferObject vbo;
 int main()
 {
 
-  if(!glfwInit())
-    return -1;
-
-  GLFWwindow* window;
-
-  glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
-
-  window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "Fortnite", NULL, NULL);
-  if(!window)
-  {
-    std::cout << "sadge" << std::endl;
-    glfwTerminate();
-    return -1;
-  }
-
-  glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
-  glfwMakeContextCurrent(window);
+  window.width = SCR_WIDTH;
+  window.height = SCR_HEIGHT;
+  window.title = "Game of Life";
+  window.init();
 
   if (glewInit() != GLEW_OK)
     std::cout << "GLEW failed to initialize" << std::endl;
 
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   glEnable( GL_BLEND );
-  glfwSetMouseButtonCallback(window, mouse_button_callback);
+
+  window.mouseButtonCallback(mouse_button_callback);
 
   Shader shader;
 
@@ -129,10 +122,9 @@ int main()
 
   Shader lines;
 
-  unsigned int vertex2 = lines.createShader(vs.c_str(), GL_VERTEX_SHADER);
   unsigned int fragment2 = lines.createShader(fs2.c_str(), GL_FRAGMENT_SHADER);
 
-  lines.makeProgram(vertex2, fragment2);
+  lines.makeProgram(vertex, fragment2);
 
   vao.create();
   vao.bind();
@@ -146,7 +138,7 @@ int main()
 
   glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
-  while (!glfwWindowShouldClose(window))
+  while (!glfwWindowShouldClose(window.window))
   {
 
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -167,7 +159,7 @@ int main()
     vbo.dynamic_data(0, 6 * sizeof(Vertex), &vertices);
     glDrawArrays(GL_TRIANGLES, 0, 6);
 
-    glfwSwapBuffers(window);
+    glfwSwapBuffers(window.window);
     glfwPollEvents();
   }
 

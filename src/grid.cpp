@@ -12,25 +12,26 @@ void Grid::scr2grid(double &x, double &y){
 
 }
 
-std::vector<Vertex> Grid::cell_x_y(int x, int y)
+std::array<Vertex, 6> Grid::cell_x_y(int x, int y)
 {
-  std::vector<Vertex> positions = cell_vertices(0.0f + (2 * x + 1)*(unit_width/2), 0.0f + (2 * y + 1)*(unit_width/2));
+  return cell_vertices(0.0f + (2 * x + 1)*(unit_width/2), 0.0f + (2 * y + 1)*(unit_width/2));
+}
+
+std::array<Vertex, 6> Grid::cell_vertices(int x, int y)
+{
+  std::array<Vertex, 6> positions = 
+    {
+      x - (unit_width/2), y + (unit_width/2),   //1
+      x + (unit_width/2), y + (unit_width/2),   //2
+      x - (unit_width/2), y - (unit_width/2),   //3
+      x + (unit_width/2), y + (unit_width/2),   //2
+      x - (unit_width/2), y - (unit_width/2),   //3
+      x + (unit_width/2), y - (unit_width/2)    //4
+    };
+
   return positions;
 }
 
-std::vector<Vertex> Grid::cell_vertices(int x, int y)
-{
-  std::vector<Vertex> positions = {
-    {x - (unit_width/2), y + (unit_width/2)},   //1
-    {x + (unit_width/2), y + (unit_width/2)},   //2
-    {x - (unit_width/2), y - (unit_width/2)},   //3
-    {x + (unit_width/2), y + (unit_width/2)},   //2
-    {x - (unit_width/2), y - (unit_width/2)},   //3
-    {x + (unit_width/2), y - (unit_width/2)}
-  };
-
-  return positions;
-}
 
 bool Grid::getCell(int i, int j)
 {

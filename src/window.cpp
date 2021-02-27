@@ -27,3 +27,13 @@ void Window::mouseButtonCallback(GLFWmousebuttonfun callback)
 {
     glfwSetMouseButtonCallback(window, callback);
 }
+
+void Window::loop(void update(void))
+{
+    while(!glfwWindowShouldClose(window))
+    {
+        update();
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+    }
+}

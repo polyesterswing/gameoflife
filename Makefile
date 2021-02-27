@@ -1,10 +1,16 @@
 LibraryDir = lib
 IncludeDir = includes
 
+Defines = -DGLEW_STATIC
+CFLAGS = -Wall -g
+LDFLAGS = -lglfw3 -lopengl32 -lgdi32
+
 Target = main.exe
 
-$(Target): src/*.cpp
-	g++ -Wall -g -L$(LibraryDir) -I$(IncludeDir) src/*.cpp src/vendor/glew/* -o bin/main.exe -DGLEW_STATIC -lglfw3 -lopengl32 -lgdi32
+SRC = $(wildcard src/*.cpp) $(wildcard src/vendor/**/*)
+
+$(Target): $(SRC)
+	g++ $(CFLAGS) -L$(LibraryDir) -I$(IncludeDir) $(SRC) -o bin/$(Target) $(Defines) $(LDFLAGS)
 
 run: $(Target)
 	cd bin && main

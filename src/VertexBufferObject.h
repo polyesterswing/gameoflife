@@ -1,3 +1,6 @@
+#ifndef VERTEXBUFFEROBJECT_H
+#define VERTEXBUFFEROBJECT_H
+
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
@@ -14,3 +17,5 @@ class VertexBufferObject
         void destroy();
 
 };
+
+#endif

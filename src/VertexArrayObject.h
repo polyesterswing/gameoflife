@@ -1,3 +1,6 @@
+#ifndef VERTEXARRAYOBJECT_H
+#define VERTEXARRAYOBJECT_H
+
 #include <stddef.h>
 #include <GL/glew.h>
 #include "utils.h"
@@ -15,3 +18,5 @@ class VertexArrayObject
         void enable(int n);
 
 };
+
+#endif

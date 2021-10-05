@@ -17,6 +17,7 @@ bool Window::init()
     }
 
     glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
+    glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
     glfwMakeContextCurrent(window);
 
     return 0;

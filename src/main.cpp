@@ -8,7 +8,6 @@
 #include <array>
 #include <string>
 #include <vector>
-#include <Windows.h>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -38,30 +37,10 @@ Game game(SCR_WIDTH, SCR_HEIGHT, 20.0f, renderer, window);
 
 int main()
 {
-    // if (glewInit() != GLEW_OK)
-    //   std::cout << "GLEW failed to initialize" << std::endl;
-
-    // glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    // glEnable(GL_BLEND);
 
     window.mouseButtonCallback(mouse_button_callback);
 
-    // vao.create();
-    // vao.bind();
-
-    // vbo.dynamic = true;
-    // vbo.create(900 * 6 * sizeof(Vertex), nullptr);
-    // vbo.bind();
-
-    // vao.addPointer();
-    // vao.enable(0);
-
-    // glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-
     window.loop(update);
-
-    // vao.destroy();
-    // vbo.destroy();
 
     renderer.deinit();
 

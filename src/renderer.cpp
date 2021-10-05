@@ -1,5 +1,7 @@
 #include "renderer.h"
 
+#define MOST_VERTICES 900 * 6
+
 void Renderer::init()
 {
 
@@ -13,7 +15,7 @@ void Renderer::init()
     vao.bind();
 
     vbo.dynamic = true;
-    vbo.create(900 * 6 * sizeof(Vertex), nullptr);
+    vbo.create(MOST_VERTICES * sizeof(Vertex), nullptr);
     vbo.bind();
 
     vao.addPointer();
@@ -35,12 +37,6 @@ void Renderer::update()
 
     vao.bind();
     vbo.bind();
-
-    // shader.use();
-    // shader.setMat4("projection", proj);
-
-    // vbo.dynamic_data(0, quads.size()*sizeof(std::array<Vertex, 6>), &quads[0]);
-    // glDrawArrays(GL_TRIANGLES, 0, quads.size()*6);
 
     for(auto i: oneDraw)
     {

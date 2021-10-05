@@ -2,7 +2,7 @@ LibraryDir = lib
 IncludeDir = includes
 
 Defines = -DGLEW_STATIC
-CFLAGS = -Wall -g
+CFLAGS = -Wall -g -03
 #LDFLAGS = -lglfw3 -lopengl32 -lgdi32
 LDFLAGS = -lglfw -lGL -lX11 -lpthread -lXrandr -lXi -ldl
 
